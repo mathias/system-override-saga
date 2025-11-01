@@ -1,0 +1,14 @@
+CREDITS / LICENSING INFORMATION
+
+ - Love2D framework
+        Website: https://love2d.org
+        License: zlib
+ - Fennel language
+        Website: https://fennel-lang.org
+        License: MIT
+ - Lume library
+        Website: https://github.com/rxi/lume
+        License: MIT
+ - min-love2d-fennel template
+        Website: https://codeberg.org/alexjgriffith/min-love2d-fennel
+        License: MIT

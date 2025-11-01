@@ -1,3 +1,24 @@
+* System Override Saga (SOS)
+
+A game written in Fennel + Love2D for the  [[https://itch.io/jam/autumn-lisp-game-jam-2025][Autumn Lisp Game Jam 2025]]. Based on the [[https://codeberg.org/alexjgriffith/min-love2d-fennel]] project.
+
+** Note on LLMs/AI:
+
+No LLMs or generative AI were used in the creation of this game. No PRs using LLMs will be accepted. No exceptions.
+
+** Usage
+
+
+** License
+
+GPL 3.0, see license.txt file. For dependencies and assets, see assets/text/credits.txt
+
+Copyright Matt Gauger 2025.
+
+---
+
+*Original README appears below:*
+
 * Minimal Fennel Love2D Setup
 
 In the lead up to the semi-annual [[https://itch.io/jam/autumn-lisp-game-jam-2018][Autumn Lisp Game Jam]] I thought I'd look into Phil Hagelberg's approach to last Aprils Jam, using [[https://love2d.org/][love2d]] in concert with [[https://fennel-lang.org/][fennel]]. Phil outlines his approach on his [[https://technomancy.us/187][blog]].

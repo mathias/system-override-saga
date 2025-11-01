@@ -7,8 +7,9 @@
 (love.graphics.setNewFont 30)
 
 (local (major minor revision) (love.getVersion))
-(local fennel (require :lib.fennel))
-(fn pp [x] (print (fennel.view x)))
+(local utils (require :utils))
+(local pp utils.pp)
+(var keylastpressed nil)
 
 {:activate (fn activate [])
  :draw (fn draw [message]
@@ -19,13 +20,18 @@
          (love.graphics.printf
           (: "This window should close in %0.1f seconds"
              :format (math.max 0 (- countdown-time time)))
-          0 (- (/ h 2) 15) w :center))
+          0 (- (/ h 2) 15) w :center)
+         (when (not (= keylastpressed nil))
+           (love.graphics.printf
+             (: "Last key pressed was %s"
+                :format keylastpressed)
+             0 (+ (- (/ h 2) 15) 35) w :center))
+)
  :update (fn update [dt set-mode]
-             (if (< counter 65535)
-                 (set counter (+ counter 1))
-                 (set counter 0))
-             (incf time dt)
              (when (> time countdown-time)
                (set time 0)
                (love.event.quit)))
- :keypressed (fn keypressed [key set-mode])}
+ :keypressed (fn keypressed [key set-mode]
+               (set keylastpressed key)
+               (when (= key "p")
+                   (set-mode :mode-puzzle)))}
