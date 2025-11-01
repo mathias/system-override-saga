@@ -8,6 +8,6 @@
     false "0"))
 
 {
-  :pp pp
   :displayable-bool displayable-bool
+  :pp pp
 }
