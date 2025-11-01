@@ -3,6 +3,7 @@
 local fennel = require("lib.fennel").install({ correlate = true, moduleName = "lib.fennel" })
 
 lume = require("lib.lume")
+pp = require("utils").pp
 
 local make_love_searcher = function(env)
 	return function(module_name)

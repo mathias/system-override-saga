@@ -2,4 +2,12 @@
 
 (fn pp [x] (print (fennel.view x)))
 
-{:pp pp}
+(fn displayable-bool [boolean]
+  (case boolean
+    true "1"
+    false "0"))
+
+{
+  :pp pp
+  :displayable-bool displayable-bool
+}

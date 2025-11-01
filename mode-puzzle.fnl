@@ -1,43 +1,38 @@
 (import-macros {: incf} :sample-macros)
 (local utils (require :utils))
+(local chips (require :chips))
+
 (local pp utils.pp)
+(local displayable-bool utils.displayable-bool)
 
-(love.graphics.setNewFont 30)
+(love.graphics.setNewFont 20)
 
-(var keylastpressed nil)
+(var state (chips.empty-state))
 
-(var state {})
-(fn xorFn [a b] (and (or a b) (not (= a b))))
-(local xorChip {:inputs [1 2]
-                :outputs [1]
-                :function xorFn})
-
-(local xorTruthTable [
-                      {:a false :b false :output false}
-                      {:a false :b true :output true}
-                      {:a true :b false :output true}
-                      {:a true :b true :output false}])
-
-(var currentDesign {})
-
-{:activate (fn activate [])
+{:activate (fn activate []
+             (pp state))
  :draw (fn draw [message]
          (local (w h _flags) (love.window.getMode))
          (love.graphics.printf
-           "Input Output Expected Actual"
+           "Datasheet:\nInput a b = Expected Output | Actual Output "
            0 20 w :left)
-         (let [thisLength (length xorTruthTable)]
-         (for [i 1 thisLength 1]
-           (let [lst (. xorTruthTable i)]
-             (love.graphics.printf
-               (: "%s %s %s %s" :format (. lst :a) (. lst :b) (. lst :output) ((. xorChip :function) (. lst :a) (. lst :b)))
-               0 (+ (* i 30) 30) w :left)))))
- :update (fn update [dt set-mode]
-           )
+         (let [this-length (length chips.xor-truth-table)
+               offset 1]
+                 (for [i 1 this-length 1]
+                   (let [lst (. chips.xor-truth-table i)]
+                     (love.graphics.printf
+                       (: "%s %s = %s | %s" :format
+                          (displayable-bool (. lst :a))
+                          (displayable-bool (. lst :b))
+                          (displayable-bool (. lst :output))
+                          (displayable-bool ((. chips.xor-chip :function) (. lst :a) (. lst :b))))
+                       0 (+ (* (+ i offset) 20) 20) w :left))))
+         (love.graphics.setColor 255 0 0))
+ :update (fn update [dt set-mode])
  :keypressed (fn keypressed [key set-mode]
-               (set keylastpressed key)
-               (pp keylastpressed)
-               (case keylastpressed
+               (case key
+                 "a" (do (chips.add-nand state) (pp state))
+                 "w" (do (chips.wire-nands-to-xor state) (pp state))
                  "up" (pp "up key pressed")
                  "down" (pp "down key pressed")
                  "left" (pp "left key pressed")
