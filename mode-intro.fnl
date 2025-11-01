@@ -18,9 +18,11 @@
           (: "Love Version: %s.%s.%s"
              :format  major minor revision) 0 10 w :center)
          (love.graphics.printf
-          (: "This window should close in %0.1f seconds"
-             :format (math.max 0 (- countdown-time time)))
+          (: "System Override Saga v%s" :format "0.1.0alpha") ;; TODO: pass this in somehow from globals?
           0 (- (/ h 2) 15) w :center)
+         (love.graphics.printf
+                "Press 'p' to START. 'ESC' to QUIT."
+                0 (- h 45) w :center)
          (when (not (= keylastpressed nil))
            (love.graphics.printf
              (: "Last key pressed was %s"

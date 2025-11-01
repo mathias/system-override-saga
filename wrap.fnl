@@ -41,7 +41,7 @@
 
 (fn love.keyreleased [key code isrepeat]
   (if (and (love.keyboard.isDown "lctrl" "rctrl" "capslock") (= key "q"))
-	      (love.event.quit)
+      (love.event.quit)
       ;; add what each keypress should do in each mode
       (not isrepeat)
-	      (safely #(mode.keypressed key set-mode))))
+      (safely #(mode.keypressed key set-mode))))

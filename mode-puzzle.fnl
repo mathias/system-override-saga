@@ -39,4 +39,7 @@
                (pp keylastpressed)
                (case keylastpressed
                  "up" (pp "up key pressed")
+                 "down" (pp "down key pressed")
+                 "left" (pp "left key pressed")
+                 "right" (pp "right key pressed")
                  "escape" (set-mode :mode-intro)))}
