@@ -33,5 +33,6 @@
                (love.event.quit)))
  :keypressed (fn keypressed [key set-mode]
                (set keylastpressed key)
-               (when (= key "p")
-                   (set-mode :mode-puzzle)))}
+               (case key
+                 "p" (set-mode :mode-puzzle)
+                 "escape" (love.event.quit)))} ;; TODO: add an "Are you sure?" prompt
