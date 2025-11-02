@@ -3,24 +3,23 @@
 (fn xor-fn [a b] (and (or a b) (not (= a b))))
 (local xor-chip {
        :label "XOR"
-       :inputs [:a :b]
-       :outputs [:x]
-       :mappings [:a :b :x]
+       :mappings [{:label "a" :type :input}
+                  {:label "b" :type :input}
+                  {:label "x" :type :output}]
        :function xor-fn})
 
 (fn nand-fn [a b] (not (and a b)))
 (local nand-chip {
        :label "NAND"
-       :inputs [:a :b]
-       :outputs [:x]
-       :mappings [:a :b :x]
+       :mappings [{:label "a" :type :input}
+                  {:label "b" :type :input}
+                  {:label "x" :type :output}]
        :function nand-fn})
 
 (fn not-chip {
   :label "NOT"
-  :inputs [:a]
-  :outputs [:x]
-  :mappings [:a :x]
+  :mappings [{:label "a" :type :input}
+             {:label "x" :type :output}]
   :function (fn [a] (nand-fn a a))})
 
 (local xor-truth-table [{:a false :b false :output false}
@@ -61,10 +60,6 @@
 (fn wire-nands-to-xor [state]
   (let [current-design state.current-design
         chip-list state.chip-list]
-    (table.insert chip-list {:label "Current Design"
-                             :inputs [:a :b]
-                             :outputs [:x]
-                             :mappings [:a :b :x]})
     (table.insert chip-list (clone-chip nand-chip "NAND 1"))
     (table.insert chip-list (clone-chip nand-chip "NAND 2"))
     (table.insert chip-list (clone-chip nand-chip "NAND 3"))
@@ -101,7 +96,11 @@
 
 (fn empty-state []
   {:current-design {:wirings []}
-  :chip-list []})
+  :chip-list [
+    {:label "Current Design"
+     :mappings [{:label "a" :type :input}
+                {:label "b" :type :input}
+                {:label "out" :type :output}]}]})
 
 (fn compute-output [state]
   ;; pretend fn for now
