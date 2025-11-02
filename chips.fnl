@@ -1,4 +1,5 @@
 (local lume (require "lib.lume"))
+(local utils (require "utils"))
 
 (fn xor-fn [a b] (and (or a b) (not (= a b))))
 (local xor-chip {
@@ -27,11 +28,14 @@
                         {:a true  :b false :output true}
                         {:a true  :b true  :output false}])
 
-(fn create-nand-gate [inputs]
-  {:inputs inputs :func nand-fn})
+(fn create-nand-gate [inputs ?x ?y]
+  (var gate {:inputs inputs :func nand-fn})
+  (when ?x (set gate.x ?x))
+  (when ?y (set gate.y ?y))
+  gate)
 
 (fn create-xor-graph []
-  (let [gate1 (create-nand-gate ["A" "B"])
+  (let [gate1 (create-nand-gate ["A" "B"] 190 275)
         gate2 (create-nand-gate ["A" gate1])
         gate3 (create-nand-gate ["B" gate1])
         gate4 (create-nand-gate [gate2 gate3])]
@@ -43,7 +47,7 @@
 (fn evaluate-gate [gate input-values cache]
   (var cache (or cache []))
   (var resolved-inputs [])
-  (let [inputs gate.inputs]
+  (let [inputs (. gate :inputs)]
     (each [_idx input (ipairs inputs)]
       (if (= "string" (type input))
           (table.insert resolved-inputs (. input-values input))
