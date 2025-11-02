@@ -27,99 +27,49 @@
                         {:a true  :b false :output true}
                         {:a true  :b true  :output false}])
 
+(fn create-nand-gate [inputs]
+  {:inputs inputs :func nand-fn})
 
-(fn clone-chip [chip-spec ?label]
-  (let [new-chip (lume.clone chip-spec)]
-    (when (not (= nil ?label))
-      (set new-chip.label ?label))
-    new-chip))
+(fn create-xor-graph []
+  (let [gate1 (create-nand-gate ["A" "B"])
+        gate2 (create-nand-gate ["A" gate1])
+        gate3 (create-nand-gate ["B" gate1])
+        gate4 (create-nand-gate [gate2 gate3])]
+    [gate1 gate2 gate3 gate4]))
 
-(fn add-nand [state]
-  (let [current-design state.current-design
-        chip-list state.chip-list
-        new-nand (clone-chip nand-chip "NAND")]
-    (set new-nand.function nand-fn)
-    (table.insert chip-list new-nand))
-  state)
+(fn update-gate-inputs [gate new-inputs]
+  (set gate.inputs new-inputs))
 
-(fn helper-find-idx [table label]
-  (lume.find table (lume.match table (fn [x] (= (. x :label) label)))))
+(fn evaluate-gate [gate input-values cache]
+  (var cache (or cache []))
+  (var resolved-inputs [])
+  (let [inputs gate.inputs]
+    (each [_idx input (ipairs inputs)]
+      (if (= "string" (type input))
+          (table.insert resolved-inputs (. input-values input))
+          (table.insert resolved-inputs (evaluate-gate input input-values cache))))
+    (if (. cache gate)
+      (. cache gate)
+      (let [result ((. gate :func) (. resolved-inputs 1) (. resolved-inputs 2))]
+        (set cache gate)
+        result))))
 
-(fn wire-up [state chip-a-idx port-a-idx chip-b-idx port-b-idx]
-  ;; TODO: enforce validation that the port counts exist!
-  ;; Also: outputs can go to multiple places, an input can't have multiple things coming in to it
-  (if (and (not (= nil (. state.chip-list chip-a-idx)))
-             (not (= nil (. state.chip-list chip-b-idx)))
-             (not (= nil (. (. (. state.chip-list chip-a-idx) :mappings) port-a-idx)))
-             (not (= chip-a-idx chip-b-idx)) ;; Cannot link to itself
-                  )
-    (do
-      (print "Passed validations")
-      (let [current-design state.current-design
-            wirings current-design.wirings]
-        (table.insert wirings [chip-a-idx port-a-idx chip-b-idx port-b-idx])))
-    (print (: "Failed validations: %s %s -> %s %s" :format chip-a-idx port-a-idx chip-b-idx port-b-idx))))
-
-;; Special helper for now, to wire up 4 NANDs correctly in an XOR:
-(fn wire-nands-to-xor [state]
-  (let [current-design state.current-design
-        chip-list state.chip-list]
-    (table.insert chip-list (clone-chip nand-chip "NAND 1"))
-    (table.insert chip-list (clone-chip nand-chip "NAND 2"))
-    (table.insert chip-list (clone-chip nand-chip "NAND 3"))
-    (table.insert chip-list (clone-chip nand-chip "NAND 4"))
-    ;; Now it needs to be wired up correctly
-    (let [
-          current-chip (helper-find-idx chip-list "Current Design")
-          nand-1-idx (helper-find-idx chip-list "NAND 1")
-          nand-2-idx (helper-find-idx chip-list "NAND 2")
-          nand-3-idx (helper-find-idx chip-list "NAND 3")
-          nand-4-idx (helper-find-idx chip-list "NAND 4")]
-      (wire-up state current-chip 1 nand-1-idx 1)
-      (wire-up state current-chip 2 nand-1-idx 2)
-      (wire-up state current-chip 1 nand-2-idx 1)
-      (wire-up state current-chip 2 nand-3-idx 2)
-      (wire-up state nand-1-idx 3 nand-2-idx 2) ;; nand 1 out
-      (wire-up state nand-1-idx 3 nand-3-idx 1) ;; nand 1 out
-      (wire-up state nand-2-idx 3 nand-4-idx 1)
-      (wire-up state nand-3-idx 3 nand-4-idx 2)
-      (wire-up state nand-4-idx 3 current-chip 3)
-
-      (wire-up state nand-1-idx 3 nand-1-idx 1) ;; invalid wiring
-
-      ;; (table.insert current-design.wirings [:design :a nand-1-idx 1])
-      ;; (table.insert current-design.wirings [:design :b nand-1-idx 2])
-      ;; (table.insert current-design.wirings [nand-1-idx 3 nand-2-idx 2])
-      ;; (table.insert current-design.wirings [nand-1-idx 3 nand-3-idx 1])
-      ;; (table.insert current-design.wirings [:design :a nand-2-idx 1])
-      ;; (table.insert current-design.wirings [:design :b nand-3-idx 2])
-      ;; (table.insert current-design.wirings [nand-2-idx 3 nand-4-idx 1])
-      ;; (table.insert current-design.wirings [nand-3-idx 3 nand-4-idx 2])
-      ;; (table.insert current-design.wirings [nand-4-idx 3 :design :out])
-
-    ))
-  state)
-
-(fn empty-state []
-  {:current-design {:wirings []}
-  :chip-list [
-    {:label "Current Design"
-     :mappings [{:label "a" :type :input}
-                {:label "b" :type :input}
-                {:label "out" :type :output}]}]})
-
-(fn compute-output [state]
-  ;; pretend fn for now
-  true
-  )
+(fn test-harness-xor [gate truth-table]
+  (each [_idx rule (ipairs truth-table)]
+    (let [inputs {:A (. rule :a) :B (. rule :b)}
+	 output (evaluate-gate gate inputs [])]
+      (if (= output (. rule :output))
+	  (print "PASS!")
+	  (print "FAIL! -> %s" :format rule)))))
 
 {
-:add-nand add-nand
-:compute-output compute-output
-:empty-state empty-state
 :nand-chip nand-chip
 :not-chip not-chip
-:wire-nands-to-xor wire-nands-to-xor
 :xor-chip xor-chip
 :xor-truth-table xor-truth-table
+:evaluate-gate evaluate-gate
+:update-gate-inputs update-gate-inputs
+:create-nand-gate create-nand-gate
+:create-xor-graph create-xor-graph
+:test-harness-xor test-harness-xor
 }

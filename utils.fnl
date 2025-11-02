@@ -3,9 +3,9 @@
 (fn pp [x] (print (fennel.view x)))
 
 (fn displayable-bool [boolean]
-  (case boolean
-    true "1"
-    false "0"))
+  (if (= boolean true)
+    "1"
+    "0"))
 
 {
   :displayable-bool displayable-bool
