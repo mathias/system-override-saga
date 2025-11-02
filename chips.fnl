@@ -48,13 +48,17 @@
 (fn wire-up [state chip-a-idx port-a-idx chip-b-idx port-b-idx]
   ;; TODO: enforce validation that the port counts exist!
   ;; Also: outputs can go to multiple places, an input can't have multiple things coming in to it
-  (when (and (not (= nil (. state.chip-list chip-a-idx)))
+  (if (and (not (= nil (. state.chip-list chip-a-idx)))
              (not (= nil (. state.chip-list chip-b-idx)))
-             (not (= nil (. (. (. state.chip-list chip-a-idx) :mappings) port-a-idx))))
-    (print "Found chip-a + port-a"))
-  (let [current-design state.current-design
-        wirings current-design.wirings]
-    (table.insert wirings [chip-a-idx port-a-idx chip-b-idx port-b-idx])))
+             (not (= nil (. (. (. state.chip-list chip-a-idx) :mappings) port-a-idx)))
+             (not (= chip-a-idx chip-b-idx)) ;; Cannot link to itself
+                  )
+    (do
+      (print "Passed validations")
+      (let [current-design state.current-design
+            wirings current-design.wirings]
+        (table.insert wirings [chip-a-idx port-a-idx chip-b-idx port-b-idx])))
+    (print (: "Failed validations: %s %s -> %s %s" :format chip-a-idx port-a-idx chip-b-idx port-b-idx))))
 
 ;; Special helper for now, to wire up 4 NANDs correctly in an XOR:
 (fn wire-nands-to-xor [state]
@@ -80,6 +84,8 @@
       (wire-up state nand-2-idx 3 nand-4-idx 1)
       (wire-up state nand-3-idx 3 nand-4-idx 2)
       (wire-up state nand-4-idx 3 current-chip 3)
+
+      (wire-up state nand-1-idx 3 nand-1-idx 1) ;; invalid wiring
 
       ;; (table.insert current-design.wirings [:design :a nand-1-idx 1])
       ;; (table.insert current-design.wirings [:design :b nand-1-idx 2])
