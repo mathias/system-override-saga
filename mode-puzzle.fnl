@@ -71,13 +71,5 @@
                  "right" (pp "right key pressed")
                  "return" (pp "enter key pressed")
                  "i" (open-inventory)
-                 "t" (do
-                       (print "XOR graph test:")
-                       (let [output (lume.last state.graph)]
-                               (chips.test-harness output chips.truth-table-xor))
-                       (set state.graph (chips.create-not-graph))
-                       (print "NOT graph test:")
-                       (chips.test-harness (lume.last state.graph) chips.truth-table-not)
-                       )
                  "escape" (either-leave-inventory-or-leave-mode set-mode)))
 }

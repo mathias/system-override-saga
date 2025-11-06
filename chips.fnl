@@ -20,7 +20,14 @@
   :label "NOT"
   :mappings [{:label "a" :type :input}
              {:label "x" :type :output}]
-  :function (fn [a] (nand-fn a a))})
+  :function (fn [a] (not a))})
+
+(fn or-chip {
+  :label "OR"
+  :mappings [{:label "a" :type :input}
+             {:label "b" :type :input}
+             {:label "x" :type :output}]
+  :function (fn [a b] (or a b))})
 
 (local truth-table-xor [{:a false :b false :output false}
                         {:a false :b true  :output true}
@@ -29,6 +36,11 @@
 
 (local truth-table-not [{:a false :output true}
                         {:a true :output false}])
+
+(local truth-table-or [{:a false :b false :output false}
+                       {:a false :b true  :output true}
+                       {:a true  :b false :output true}
+                       {:a true  :b true  :output true}])
 
 (fn create-nand-gate [inputs ?x ?y]
   (var gate {:inputs inputs :func nand-fn})
@@ -46,12 +58,18 @@
         gate4 (create-nand-gate [gate2 gate3])]
     [gate1 gate2 gate3 gate4]))
 
+(fn create-or-graph []
+  (let [gate1 (create-nand-gate ["A" "A"])
+        gate2 (create-nand-gate ["B" "B"])
+        gate3 (create-nand-gate [gate1 gate2])]
+    [gate1 gate2 gate3]))
+
 (fn update-gate-inputs [gate new-inputs]
   (set gate.inputs new-inputs))
 
 (fn evaluate-gate [gate input-values cache]
   (var cache (or cache []))
-  (var resolved-inputs [])
+  (local resolved-inputs [])
   (let [inputs (. gate :inputs)]
     (each [_idx input (ipairs inputs)]
       (if (= "string" (type input))
@@ -69,18 +87,6 @@
      (. rule :b)
      (. rule :output)))
 
-(fn test-harness [gate truth-table]
-  (lume.all truth-table (fn [rule]
-    (let [inputs {:A (. rule :a) :B (. rule :b)}
-          output (evaluate-gate gate inputs [])]
-      (if (= output (. rule :output))
-          (do ;; passed truth table rule
-            (print (: "PASS! -> Expected: %s Got: %s" :format (displayable-rule rule) output))
-            true)
-          (do ;; failed rule:
-            (print (: "FAIL! -> Expected: %s Got: %s" :format (displayable-rule rule) output))
-            false))))))
-
 (fn initial-state []
   {:graph (create-xor-graph)
    :static {:A {:x 100 :y 200}
@@ -91,12 +97,12 @@
 {
 :create-nand-gate create-nand-gate
 :create-not-graph create-not-graph
+:create-or-graph create-or-graph
 :create-xor-graph create-xor-graph
 :evaluate-gate evaluate-gate
 :initial-state initial-state
 :nand-chip nand-chip
 :not-chip not-chip
-:test-harness test-harness
 :update-gate-inputs update-gate-inputs
 :xor-chip xor-chip
 :truth-table-xor truth-table-xor
