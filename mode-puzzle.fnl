@@ -8,17 +8,9 @@
 
 (love.graphics.setNewFont 20)
 
-(fn initial-state []
-  {:graph (chips.create-xor-graph)
-   :static {:A {:x 100 :y 200}
-            :B {:x 100 :y 350}
-            :OUT {:x 300 :y 250}}})
-
-
 (var selectedNode nil)
-(var state (initial-state))
-(set selectedNode nil)
-(set _G.state state) ;; make available from repl
+(var state (chips.initial-state))
+(set _G.state state) ;; make available from repl, TODO: remove for release
 
 (fn draw-circuit [state w h]
   (love.graphics.printf "a" state.static.A.x state.static.A.y w :left)
@@ -28,7 +20,18 @@
     (each [_idx node (ipairs graph)]
       (when (and node.x node.y)
         (love.graphics.rectangle "fill" node.x node.y 30 30))))
+  ;; (if state.inventory-shown
+  ;;     (pp "Inventory open")
+  ;;     (pp "Inventory closed"))
   )
+
+(fn either-leave-inventory-or-leave-mode [set-mode]
+  (if (= state.inventory-shown true)
+      (set state.inventory-shown false)
+      (set-mode :mode-intro))) ;; TODO: This should just pause the mode for now?
+
+(fn open-inventory []
+  (set state.inventory-shown true))
 
 {:activate (fn activate []
              true)
@@ -37,10 +40,10 @@
          (love.graphics.printf
           "Datasheet:\na b = out"
           0 20 w :left)
-         (let [this-length (lume.count chips.xor-truth-table)
+         (let [this-length (lume.count chips.truth-table-xor)
                offset 1]
            (for [i 1 this-length 1]
-             (let [lst (. chips.xor-truth-table i)]
+             (let [lst (. chips.truth-table-xor i)]
                (love.graphics.printf
                 (: "%s %s = %s" :format
                    (displayable-bool (. lst :a))
@@ -49,14 +52,26 @@
                 0 (+ (* (+ i offset) 20) 20) w :left))))
          (draw-circuit state w h))
  :update (fn update [dt set-mode] ;; dt is delta time
+	   ;; (if state.inventory-shown
+	   ;;    ;; inventory open -- only update inventory
+            ;;;   ;; chip design screen open, tick updates as normal
+	   ;;     )
            )
  :keypressed (fn keypressed [key set-mode]
                (case key
-                 "w" (let [gate (lume.last state.graph)]
-                       (chips.test-harness-xor gate chips.xor-truth-table))
                  "up" (pp "up key pressed")
                  "down" (pp "down key pressed")
                  "left" (pp "left key pressed")
                  "right" (pp "right key pressed")
-                 "return" (pp "enter key pressed")))
+                 "return" (pp "enter key pressed")
+		 "i" (open-inventory)
+		 "t" (do
+		       (print "XOR graph test:")
+		       (let [output (lume.last state.graph)]
+			       (chips.test-harness output chips.truth-table-xor))
+		       (set state.graph (chips.create-not-graph))
+		       (print "NOT graph test:")
+		       (chips.test-harness (lume.last state.graph) chips.truth-table-not)
+		       )
+                 "escape" (either-leave-inventory-or-leave-mode set-mode)))
 }

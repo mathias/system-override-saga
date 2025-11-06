@@ -1,5 +1,4 @@
 (local lume (require "lib.lume"))
-(local utils (require "utils"))
 
 (fn xor-fn [a b] (and (or a b) (not (= a b))))
 (local xor-chip {
@@ -23,16 +22,22 @@
              {:label "x" :type :output}]
   :function (fn [a] (nand-fn a a))})
 
-(local xor-truth-table [{:a false :b false :output false}
+(local truth-table-xor [{:a false :b false :output false}
                         {:a false :b true  :output true}
                         {:a true  :b false :output true}
                         {:a true  :b true  :output false}])
+
+(local truth-table-not [{:a false :output true}
+                        {:a true :output false}])
 
 (fn create-nand-gate [inputs ?x ?y]
   (var gate {:inputs inputs :func nand-fn})
   (when ?x (set gate.x ?x))
   (when ?y (set gate.y ?y))
   gate)
+
+(fn create-not-graph []
+  [(create-nand-gate ["A" "A"] 190 275)])
 
 (fn create-xor-graph []
   (let [gate1 (create-nand-gate ["A" "B"] 190 275)
@@ -58,22 +63,42 @@
         (set cache gate)
         result))))
 
-(fn test-harness-xor [gate truth-table]
-  (each [_idx rule (ipairs truth-table)]
+(fn displayable-rule [rule]
+  (: "%s %s = %s" :format
+     (. rule :a)
+     (. rule :b)
+     (. rule :output)))
+
+(fn test-harness [gate truth-table]
+  (lume.all truth-table (fn [rule]
     (let [inputs {:A (. rule :a) :B (. rule :b)}
-	 output (evaluate-gate gate inputs [])]
+          output (evaluate-gate gate inputs [])]
       (if (= output (. rule :output))
-	  (print "PASS!")
-	  (print "FAIL! -> %s" :format rule)))))
+          (do ;; passed truth table rule
+            (print (: "PASS! -> Expected: %s Got: %s" :format (displayable-rule rule) output))
+            true)
+          (do ;; failed rule:
+            (print (: "FAIL! -> Expected: %s Got: %s" :format (displayable-rule rule) output))
+            false))))))
+
+(fn initial-state []
+  {:graph (create-xor-graph)
+   :static {:A {:x 100 :y 200}
+            :B {:x 100 :y 350}
+            :OUT {:x 300 :y 250}}
+   :inventory-shown false})
 
 {
+:create-nand-gate create-nand-gate
+:create-not-graph create-not-graph
+:create-xor-graph create-xor-graph
+:evaluate-gate evaluate-gate
+:initial-state initial-state
 :nand-chip nand-chip
 :not-chip not-chip
-:xor-chip xor-chip
-:xor-truth-table xor-truth-table
-:evaluate-gate evaluate-gate
+:test-harness test-harness
 :update-gate-inputs update-gate-inputs
-:create-nand-gate create-nand-gate
-:create-xor-graph create-xor-graph
-:test-harness-xor test-harness-xor
+:xor-chip xor-chip
+:truth-table-xor truth-table-xor
+:truth-table-not truth-table-not
 }

@@ -18,9 +18,9 @@ Press space to return to the previous mode after reloading in the repl.")
   (love.graphics.print state.traceback 15 125))
 
 (fn keypressed [_ key set-mode]
-  (match key
-    :escape (love.event.quit)
-    :space (set-mode state.old-mode)))
+  (case key
+    "escape" (love.event.quit)
+    "space" (set-mode state.old-mode)))
 
 (fn color-msg [msg]
   ;; convert compiler's ansi escape codes to love2d-friendly codes
