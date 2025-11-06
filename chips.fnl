@@ -87,8 +87,8 @@
      (. rule :b)
      (. rule :output)))
 
-(fn initial-state []
-  {:graph (create-xor-graph)
+(fn initial-state [graph]
+  {:graph graph
    :static {:A {:x 100 :y 200}
             :B {:x 100 :y 350}
             :OUT {:x 300 :y 250}}

@@ -9,7 +9,7 @@
 (love.graphics.setNewFont 20)
 
 (var selected-node nil)
-(var state (chips.initial-state))
+(var state (chips.initial-state (chips.create-xor-graph)))
 (set _G.state state) ;; make available from repl, TODO: remove for release
 
 (fn draw-circuit [state w h]
