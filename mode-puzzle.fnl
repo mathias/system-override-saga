@@ -8,7 +8,7 @@
 
 (love.graphics.setNewFont 20)
 
-(var selectedNode nil)
+(var selected-node nil)
 (var state (chips.initial-state))
 (set _G.state state) ;; make available from repl, TODO: remove for release
 
@@ -33,45 +33,51 @@
 (fn open-inventory []
   (set state.inventory-shown true))
 
+(fn next-node [selected-node state]
+  )
+
 {:activate (fn activate []
              true)
  :draw (fn draw [message]
          (local (w h _flags) (love.window.getMode))
-         (love.graphics.printf
-          "Datasheet:\na b = out"
-          0 20 w :left)
-         (let [this-length (lume.count chips.truth-table-xor)
-               offset 1]
-           (for [i 1 this-length 1]
-             (let [lst (. chips.truth-table-xor i)]
-               (love.graphics.printf
-                (: "%s %s = %s" :format
-                   (displayable-bool (. lst :a))
-                   (displayable-bool (. lst :b))
-                   (displayable-bool (. lst :output)))
-                0 (+ (* (+ i offset) 20) 20) w :left))))
+	 ; TODO: This becomes part of the pages of the book in the inventory (datasheets) later:
+         ; (love.graphics.printf
+         ;  "Datasheet:\na b = out"
+         ;  0 20 w :left)
+         ; (let [this-length (lume.count chips.truth-table-xor)
+         ;       offset 1]
+         ;   (for [i 1 this-length 1]
+         ;     (let [lst (. chips.truth-table-xor i)]
+         ;       (love.graphics.printf
+         ;        (: "%s %s = %s" :format
+         ;           (displayable-bool (. lst :a))
+         ;           (displayable-bool (. lst :b))
+         ;           (displayable-bool (. lst :output)))
+         ;        0 (+ (* (+ i offset) 20) 20) w :left))))
          (draw-circuit state w h))
  :update (fn update [dt set-mode] ;; dt is delta time
-	   ;; (if state.inventory-shown
-	   ;;    ;; inventory open -- only update inventory
+           ;; (if state.inventory-shown
+           ;;    ;; inventory open -- only update inventory
             ;;;   ;; chip design screen open, tick updates as normal
-	   ;;     )
+           ;;     )
            )
  :keypressed (fn keypressed [key set-mode]
                (case key
-                 "up" (pp "up key pressed")
+                 "up" (set selected-node (if (= selected-node nil)
+                                             (lume.first state.graph)
+                                             (next-node selected-node state)))
                  "down" (pp "down key pressed")
                  "left" (pp "left key pressed")
                  "right" (pp "right key pressed")
                  "return" (pp "enter key pressed")
-		 "i" (open-inventory)
-		 "t" (do
-		       (print "XOR graph test:")
-		       (let [output (lume.last state.graph)]
-			       (chips.test-harness output chips.truth-table-xor))
-		       (set state.graph (chips.create-not-graph))
-		       (print "NOT graph test:")
-		       (chips.test-harness (lume.last state.graph) chips.truth-table-not)
-		       )
+                 "i" (open-inventory)
+                 "t" (do
+                       (print "XOR graph test:")
+                       (let [output (lume.last state.graph)]
+                               (chips.test-harness output chips.truth-table-xor))
+                       (set state.graph (chips.create-not-graph))
+                       (print "NOT graph test:")
+                       (chips.test-harness (lume.last state.graph) chips.truth-table-not)
+                       )
                  "escape" (either-leave-inventory-or-leave-mode set-mode)))
 }
