@@ -52,7 +52,7 @@
   [(create-nand-gate ["A" "A"] 190 275)])
 
 (fn create-xor-graph []
-  (let [gate1 (create-nand-gate ["A" "B"] 190 275)
+  (let [gate1 (create-nand-gate ["A" "B"])
         gate2 (create-nand-gate ["A" gate1])
         gate3 (create-nand-gate ["B" gate1])
         gate4 (create-nand-gate [gate2 gate3])]

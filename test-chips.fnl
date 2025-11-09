@@ -1,5 +1,15 @@
 (local lume (require "lib/lume"))
 (local chips (require :chips))
+(local utils (require :utils))
+
+
+;; evaluate-graph for NOT graph:
+(let [state (chips.initial-state (chips.create-not-graph))
+      output-node (lume.last state.graph)]
+  ;; not A = OUTPUT
+  (assert (= (chips.evaluate-gate output-node {:A false}) true) "not false = true")
+  (assert (= (chips.evaluate-gate output-node {:A true}) false) "not true = false")
+  )
 
 ;; describe: chips evaluate-graph fn - XOR
 (let [state (chips.initial-state (chips.create-xor-graph))
